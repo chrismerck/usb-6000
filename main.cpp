@@ -1,6 +1,9 @@
-#include<iostream>
+#include<cstdio>
 #include<libusb.h>
-using namespace std;
+
+// TODO: Change these values to those from the real DAQ
+#define DAQ_VID 0x80EE
+#define DAQ_PID 0x0021
 
 void printdev(libusb_device *dev);
 
@@ -13,57 +16,31 @@ int main()
   r = libusb_init(&ctx);
   if (r<0)
   {
-    cout<<"Init Error "<<r<<endl;
+    fprintf(stderr,"Initialization Error: %d\n",r);
     return 1;
   }
   libusb_set_debug(ctx,3);
-  cnt=libusb_get_device_list(ctx,&devs);
-  if (cnt<0)
+
+  libusb_device_handle *dev;
+  dev = libusb_open_device_with_vid_pid(ctx,DAQ_VID,DAQ_PID);
+  if (dev<=0)
   {
-    cout<<"Get Device Error"<<endl;
+    fprintf(stderr,"Error opening device: %d\n",dev);
+    return 1;
   }
-  cout<<cnt<<" Devices in list."<<endl;
-  ssize_t i;
-  for (i-0;i<cnt;i++)
-  {
-    printdev(devs[i]);
+  printf("DAQ Found!\n");
+
+  r=libusb_kernel_driver_active(dev,1);
+  printf("Kernel Driver Active: ");
+  if (r==0) {
+    printf("Yes\n");
+  } else if (r==1) {
+    printf("No\n");
+  } else {
+    printf("Error: %d\n",r);
   }
-  libusb_free_device_list(devs,1);
+
+  libusb_close(dev);
   libusb_exit(ctx);
   return 0;
-}
-
-void printdev(libusb_device *dev) {
-  libusb_device_descriptor desc;
-  int r = libusb_get_device_descriptor(dev, &desc);
-  if (r < 0) {
-    cout<<"failed to get device descriptor"<<endl;
-    return;
-  }
-  cout<<"Number of possible configurations: "<<(int)desc.bNumConfigurations<<"  ";
-  cout<<"Device Class: "<<(int)desc.bDeviceClass<<"  ";
-  cout<<"VendorID: "<<desc.idVendor<<"  ";
-  cout<<"ProductID: "<<desc.idProduct<<endl;
-  libusb_config_descriptor *config;
-  libusb_get_config_descriptor(dev, 0, &config);
-  cout<<"Interfaces: "<<(int)config->bNumInterfaces<<" ||| ";
-  const libusb_interface *inter;
-  const libusb_interface_descriptor *interdesc;
-  const libusb_endpoint_descriptor *epdesc;
-  for(int i=0; i<(int)config->bNumInterfaces; i++) {
-    inter = &config->interface[i];
-    cout<<"Number of alternate settings: "<<inter->num_altsetting<<" | ";
-    for(int j=0; j<inter->num_altsetting; j++) {
-      interdesc = &inter->altsetting[j];
-      cout<<"Interface Number: "<<(int)interdesc->bInterfaceNumber<<" | ";
-      cout<<"Number of endpoints: "<<(int)interdesc->bNumEndpoints<<" | ";
-      for(int k=0; k<(int)interdesc->bNumEndpoints; k++) {
-        epdesc = &interdesc->endpoint[k];
-        cout<<"Descriptor Type: "<<(int)epdesc->bDescriptorType<<" | ";
-        cout<<"EP Address: "<<(int)epdesc->bEndpointAddress<<" | ";
-      } 
-    }
-  }
-  cout<<endl<<endl<<endl;
-  libusb_free_config_descriptor(config);
 }
