@@ -45,8 +45,13 @@ int main()
     printf("Error claiming interface: %d\n", r);
     return 1;
   }
-  unsigned char p1[]={0x00
-  r=libusb_bulk_transfer(dev,0x81,)
+unsigned char test[] = {
+	0x00, 0x01, 0x00, 0x14, 0x00, 0x10, 0x01, 0x14, 0x02, 0x04, 0x00, 
+	0x00, 0x00, 0x00, 0x01, 0xd2, 0x00, 0x01, 0x00, 0x00
+};
+int transfered;
+  r=libusb_bulk_transfer(dev,0x01,test,20,&transfered,100);
+  printf("%d\n",r);
   libusb_close(dev);
   libusb_exit(ctx);
   return 0;
