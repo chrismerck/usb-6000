@@ -2,8 +2,8 @@
 #include<libusb.h>
 
 // TODO: Change these values to those from the real DAQ
-#define DAQ_VID 0x80EE
-#define DAQ_PID 0x0021
+#define DAQ_VID 0x3923
+#define DAQ_PID 0x717a
 
 void printdev(libusb_device *dev);
 
@@ -32,9 +32,9 @@ int main()
 
   r=libusb_kernel_driver_active(dev,1);
   printf("Kernel Driver Active: ");
-  if (r==0) {
+  if (r==1) {
     printf("Yes\n");
-  } else if (r==1) {
+  } else if (r==0) {
     printf("No\n");
   } else {
     printf("Error: %d\n",r);
