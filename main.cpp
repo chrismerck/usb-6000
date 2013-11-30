@@ -40,6 +40,12 @@ int main()
     printf("Error: %d\n",r);
   }
 
+  r=libusb_claim_interface(dev,1);
+  if (r!=0) {
+    printf("Error claiming interface: %d\n", r);
+    return 1;
+  }
+
   libusb_close(dev);
   libusb_exit(ctx);
   return 0;
